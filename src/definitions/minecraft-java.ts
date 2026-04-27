@@ -1,0 +1,166 @@
+import type { GameDefinition } from "../types";
+import { DIFFICULTY_OPTIONS } from "../constants";
+
+export const minecraftJava: GameDefinition = {
+  identity: { id: "minecraft-java", name: "Minecraft Java" },
+  query: {
+    protocol: "gamedig",
+    gamedigType: "minecraft",
+    defaultPort: 25565,
+  },
+  playerIdType: { account: "minecraft-java", field: "uuid" },
+  statusFields: [
+    { key: "serverIcon", label: "Icon",        source: { type: "server-icon" } },
+    { key: "players",    label: "Players",     source: { type: "player-count" } },
+    { key: "motd",       label: "MOTD",        source: { type: "motd" } },
+    { key: "version",    label: "Version",     source: { type: "version" } },
+    { key: "playerList", label: "Player List", source: { type: "player-list" } },
+  ],
+  pod: {
+    // itzg/minecraft-server has its own entrypoint; startup just runs it.
+    // ${MEMORY} is consumed by the image internally via its env vars.
+    startup: "/start",
+    dockerImages: {
+      "Java 21 (recommended)": "itzg/minecraft-server:java21",
+      "Java 17":               "itzg/minecraft-server:java17",
+      "Latest":                "itzg/minecraft-server:latest",
+    },
+    defaultDockerImageKey: "Java 21 (recommended)",
+    variables: [
+      {
+        key: "eula", label: "Accept Minecraft EULA",
+        description: "You must accept the Minecraft EULA to run the server. https://aka.ms/MinecraftEULA",
+        type: "checkbox", envKey: "EULA",
+        default: "FALSE", trueValue: "TRUE", falseValue: "FALSE",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "in:TRUE,FALSE"],
+      },
+      {
+        key: "serverType", label: "Server Type",
+        description: "The server software. Paper recommended for plugins.",
+        type: "select", envKey: "TYPE", default: "VANILLA",
+        options: [
+          { label: "Vanilla", value: "VANILLA" },
+          { label: "Paper",   value: "PAPER" },
+          { label: "Spigot",  value: "SPIGOT" },
+          { label: "Fabric",  value: "FABRIC" },
+          { label: "Forge",   value: "FORGE" },
+          { label: "Purpur",  value: "PURPUR" },
+        ],
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "in:VANILLA,PAPER,SPIGOT,FABRIC,FORGE,PURPUR"],
+      },
+      {
+        key: "version", label: "Minecraft Version",
+        description: "e.g. 1.21.4 or LATEST",
+        type: "text", envKey: "VERSION", default: "LATEST",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "string", "max:32"],
+      },
+      {
+        key: "memory", label: "Java Heap Size",
+        description: "Java heap allocation, e.g. 1G, 2G, 512M",
+        type: "text", envKey: "MEMORY", default: "1G",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "regex:/^\\d+[GM]$/"],
+      },
+      {
+        key: "difficulty", label: "Difficulty",
+        type: "select", envKey: "DIFFICULTY", default: "easy", options: DIFFICULTY_OPTIONS,
+        required: true, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["required", "in:peaceful,easy,normal,hard"],
+      },
+      {
+        key: "gamemode", label: "Default Game Mode",
+        type: "select", envKey: "MODE", default: "survival",
+        options: [
+          { label: "Survival",  value: "survival" },
+          { label: "Creative",  value: "creative" },
+          { label: "Adventure", value: "adventure" },
+          { label: "Spectator", value: "spectator" },
+        ],
+        required: true, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["required", "in:survival,creative,adventure,spectator"],
+      },
+      {
+        key: "maxPlayers", label: "Max Players",
+        type: "number", envKey: "MAX_PLAYERS", default: "20",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "integer", "min:1", "max:1000"],
+      },
+      {
+        key: "motd", label: "MOTD",
+        description: "Message shown in the server list",
+        type: "text", envKey: "MOTD", default: "A Minecraft Server",
+        required: false, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["string", "max:128"],
+      },
+      {
+        key: "pvp", label: "PVP",
+        type: "checkbox", envKey: "PVP",
+        default: "true", trueValue: "true", falseValue: "false",
+        required: true, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["required", "in:true,false"],
+      },
+      {
+        key: "whitelist", label: "Enable Whitelist",
+        type: "checkbox", envKey: "ENABLE_WHITELIST",
+        default: "FALSE", trueValue: "TRUE", falseValue: "FALSE",
+        required: true, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["required", "in:TRUE,FALSE"],
+      },
+      {
+        key: "viewDistance", label: "View Distance",
+        description: "Render distance in chunks (2–32)",
+        type: "number", envKey: "VIEW_DISTANCE", default: "10",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "integer", "min:2", "max:32"],
+      },
+      {
+        key: "level", label: "World Name",
+        description: "World save folder name. Change to switch worlds.",
+        type: "text", envKey: "LEVEL", default: "world",
+        required: true, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["required", "string", "max:64"],
+      },
+      {
+        key: "seed", label: "World Seed",
+        description: "Leave blank for a random seed. Takes effect on new world creation only.",
+        type: "text", envKey: "SEED",
+        required: false, userEditable: true, userViewable: true, requiresRestart: true,
+        rules: ["string", "max:64"],
+      },
+      {
+        key: "autopause", label: "Auto-Pause When Empty",
+        description: "Pause the server process when no players are online to save resources.",
+        type: "checkbox", envKey: "ENABLE_AUTOPAUSE",
+        default: "FALSE", trueValue: "TRUE", falseValue: "FALSE",
+        required: true, userEditable: true, userViewable: true, requiresRestart: false,
+        rules: ["required", "in:TRUE,FALSE"],
+      },
+      {
+        key: "useAikarFlags", label: "Use Aikar JVM Flags",
+        description: "Tuned GC flags. Recommended for Paper/Spigot.",
+        type: "checkbox", envKey: "USE_AIKAR_FLAGS",
+        default: "true", trueValue: "true", falseValue: "false",
+        required: true, userEditable: false, userViewable: true, requiresRestart: true,
+        rules: ["required", "in:true,false"],
+      },
+    ],
+    ports: [{ hostPort: 25565, containerPort: 25565, protocol: "tcp" }],
+    volumes: [{ name: "data", containerPath: "/data" }],
+    resources: { defaultMemoryMb: 3072, defaultCpu: 2 },
+  },
+  admin: {
+    whitelist: {
+      add:    { type: "stdin-command", command: "whitelist add {player}" },
+      remove: { type: "stdin-command", command: "whitelist remove {player}" },
+    },
+    ban: {
+      ban:   { type: "stdin-command", command: "ban {player}" },
+      unban: { type: "stdin-command", command: "pardon {player}" },
+    },
+    kick:      { kick: { type: "stdin-command", command: "kick {player}" } },
+    broadcast: { send: { type: "stdin-command", command: "say {message}" } },
+  },
+};
