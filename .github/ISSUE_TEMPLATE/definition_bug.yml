@@ -1,0 +1,41 @@
+name: Definition bug
+description: Wrong port, bad admin command, incorrect Docker image, missing field, etc.
+labels: ["bug"]
+body:
+  - type: input
+    id: game_id
+    attributes:
+      label: Game ID
+      placeholder: "e.g. minecraft-java, rust, valheim"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What's wrong?
+      options:
+        - Wrong default port
+        - Wrong or broken admin command
+        - Wrong Docker image / startup command
+        - Missing pod variable
+        - Incorrect pod variable (wrong envKey, bad default, etc.)
+        - Wrong playerIdType
+        - Query protocol not working
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is wrong and what should it be?
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / source
+      description: Link to official docs, Docker Hub page, or server logs that confirm the correct value.

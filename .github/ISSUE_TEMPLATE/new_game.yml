@@ -1,0 +1,71 @@
+name: New game request
+description: Request a new game to be added to the registry
+labels: ["new game"]
+body:
+  - type: input
+    id: game_name
+    attributes:
+      label: Game name
+      placeholder: "e.g. ARK: Survival Evolved"
+    validations:
+      required: true
+
+  - type: input
+    id: game_id
+    attributes:
+      label: Proposed slug ID
+      description: Lowercase, kebab-case. This is stored in the database and can never change.
+      placeholder: "e.g. ark-survival-evolved"
+    validations:
+      required: true
+
+  - type: input
+    id: gamedig_type
+    attributes:
+      label: gamedig type ID
+      description: Find it at https://github.com/gamedig/node-gamedig/blob/master/GAMES_LIST.md — leave blank if the game isn't in gamedig.
+      placeholder: "e.g. arkse"
+
+  - type: input
+    id: default_port
+    attributes:
+      label: Default game/query port
+      placeholder: "e.g. 27015"
+    validations:
+      required: true
+
+  - type: input
+    id: docker_image
+    attributes:
+      label: Docker image
+      description: Official or most widely-used community image.
+      placeholder: "e.g. ghcr.io/gameserver/ark:latest"
+
+  - type: dropdown
+    id: player_id
+    attributes:
+      label: Player identity type
+      description: How does this game identify players in admin commands?
+      options:
+        - Steam ID
+        - Username / display name
+        - Other (describe in notes)
+    validations:
+      required: true
+
+  - type: textarea
+    id: admin_commands
+    attributes:
+      label: Admin commands
+      description: List the server console commands for ban, unban, kick, whitelist add/remove, and broadcast if supported. Include the exact syntax.
+      placeholder: |
+        ban <steamid>
+        unban <steamid>
+        kick <steamid>
+        say <message>
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Anything else relevant — RCON support, unusual ports, env vars commonly configured, etc.
